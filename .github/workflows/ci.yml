@@ -86,6 +86,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
       - name: Build image
-        run: docker build --tag storypointpoker:ci .
+        run: docker build --tag pointroom:ci .
       - name: Smoke-test image
-        run: docker run --rm storypointpoker:ci python -c "import wsgi; print(wsgi.app.config['APP_VERSION'])"
+        run: docker run --rm pointroom:ci python -c "import wsgi; print(wsgi.app.config['APP_VERSION'])"

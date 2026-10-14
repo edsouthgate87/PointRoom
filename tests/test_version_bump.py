@@ -96,6 +96,20 @@ def test_version_check_skips_repository_first_commit(tmp_path, monkeypatch, caps
     assert "No base commit to compare against" in capsys.readouterr().out
 
 
+@pytest.mark.parametrize(
+    ("path", "is_code"),
+    [
+        ("app.py", True),
+        ("static/app.js", True),
+        ("README.md", False),
+        ("docs/images/voting.png", False),
+        (".github/workflows/ci.yml", False),
+    ],
+)
+def test_version_check_classifies_code_changes(path, is_code):
+    assert check_version_bump._is_code_change(path) is is_code
+
+
 def test_version_check_uses_parent_when_default_branch_is_head(
     version_repository, monkeypatch
 ):
