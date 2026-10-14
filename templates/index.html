@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102126">
+  <title>Point Room v{{ app_version }} | Story Point Poker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body data-room-id="{{ room_id|default('', true) }}" data-ado-work-item-base-url="{{ ado_work_item_base_url }}" data-public-base-url="{{ public_base_url }}">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="wordmark" href="/" aria-label="Point Room home">POINT<span>/</span>ROOM</a>
+      <div class="topbar-meta">
+        <div class="topbar-profile" id="profileControls" hidden>
+          <span class="avatar avatar-top" id="profileAvatar" data-avatar-color="yellow" aria-hidden="true">?</span>
+          <form class="profile-form" id="profileForm">
+            <label class="profile-label" for="profileNameInput">YOUR NAME</label>
+            <div class="profile-name-row">
+              <input class="profile-name-input" id="profileNameInput" maxlength="32" autocomplete="name" aria-label="Your name" required>
+              <button class="icon-button profile-save-button" id="saveProfileButton" type="submit" title="Save profile" aria-label="Save profile">
+                <i data-lucide="check" aria-hidden="true"></i>
+              </button>
+            </div>
+          </form>
+          <div class="avatar-color-picker">
+            <button class="color-picker room-color-trigger" id="toggleAvatarPalette" type="button" title="Show avatar palette" aria-label="Show avatar palette" aria-controls="avatarPalette" aria-expanded="false"></button>
+            <div class="avatar-palette" id="avatarPalette" role="group" aria-label="Avatar colour palette" hidden></div>
+            <input class="color-picker room-custom-picker" id="avatarColorInput" type="color" value="#f1c963" title="Choose a custom colour" aria-label="Choose a custom colour" hidden>
+          </div>
+        </div>
+        <span class="app-version">v{{ app_version }}</span>
+        <div class="connection-state" id="connectionState" data-state="idle">
+          <span class="connection-dot" aria-hidden="true"></span>
+          <span id="connectionLabel">Ready when you are</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="entry-view" id="entryView">
+        <div class="entry-copy">
+          <p class="eyebrow">TEAM ESTIMATION / 01</p>
+          <h1>Point<br><em>together.</em></h1>
+          <p class="entry-note">A quiet table for making the hard numbers visible.</p>
+          <div class="entry-mark" aria-hidden="true">
+            <span>?</span><span>5</span><span>13</span>
+          </div>
+        </div>
+
+        <form class="entry-panel" id="entryForm">
+          <div class="panel-heading">
+            <p class="eyebrow">STEP IN</p>
+            <h2>Take a seat</h2>
+          </div>
+
+          <label class="field-label" for="displayName">Your name</label>
+          <input class="text-input" id="displayName" name="name" maxlength="32" autocomplete="name" placeholder="e.g. Alex Morgan" required>
+
+          <div class="entry-color-heading">
+            <label class="field-label" for="toggleEntryAvatarPalette">Choose your colour</label>
+          </div>
+          <div class="entry-color-row">
+            <button class="color-picker entry-color-trigger" id="toggleEntryAvatarPalette" type="button" title="Show colour palette" aria-label="Show colour palette" aria-controls="entryAvatarPalette" aria-expanded="false"></button>
+            <div class="avatar-palette entry-avatar-palette" id="entryAvatarPalette" role="group" aria-label="Available avatar colour palette" hidden></div>
+            <input class="color-picker entry-custom-picker" id="entryAvatarColorInput" type="color" value="#f1c963" title="Choose a custom colour" aria-label="Choose a custom colour" hidden>
+          </div>
+          <p class="entry-color-status" id="entryColorStatus">Pick an available colour for your seat.</p>
+
+          <div class="entry-divider"><span>ROOM CODE</span><span>OPTIONAL</span></div>
+          <label class="field-label" for="roomCodeInput">Join an existing room</label>
+          <div class="join-row">
+            <input class="text-input code-input" id="roomCodeInput" name="room" maxlength="6" autocomplete="off" placeholder="ABC123" spellcheck="false">
+            <button class="button button-dark" id="joinButton" type="button">Join room</button>
+          </div>
+
+          <label class="field-label" for="deckInput">Voting cards</label>
+          <select class="text-input select-input" id="deckInput" name="deck">
+            <option value="fibonacci">Fibonacci</option>
+            <option value="safe_fibonacci">SAFe modified Fibonacci</option>
+            <option value="t_shirt">T-Shirt sizing</option>
+          </select>
+          <label class="field-label" for="issueInputEntry">First story <span class="field-hint">OPTIONAL</span></label>
+          <input class="text-input" id="issueInputEntry" name="issue" maxlength="500" placeholder="What are we sizing today?">
+          <button class="button button-accent button-wide" type="submit">
+            <span>Create a room</span>
+            <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+          </button>
+          <p class="form-error" id="entryError" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section class="room-view" id="roomView" hidden>
+        <div class="room-header">
+          <div class="room-identity">
+            <span class="eyebrow">ROOM</span>
+            <strong id="roomCodeDisplay">------</strong>
+            <button class="icon-button" id="copyRoomButton" type="button" title="Copy room link" aria-label="Copy room link">
+              <i data-lucide="copy" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="round-status" id="roundStatus" data-state="waiting">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="roundStatusText">Waiting for the room</span>
+          </div>
+        </div>
+
+        <div class="room-layout">
+          <section class="round-main">
+            <div class="story-strip">
+              <div class="story-label">
+                <span class="eyebrow">CURRENT STORY</span>
+                <span class="host-note" id="hostNote">Host editable</span>
+                <span class="story-save-status" id="storySaveStatus" data-state="idle" hidden>Saved</span>
+              </div>
+              <div class="story-form" id="issueForm">
+                <input class="story-input" id="issueInput" maxlength="500" aria-label="Current story">
+              </div>
+              <div class="story-preview" id="storyPreview" aria-live="polite"></div>
+            </div>
+
+            <div class="round-heading">
+              <div>
+                <p class="eyebrow">THE TABLE</p>
+                <h2>Choose a point</h2>
+              </div>
+              <div class="round-meta">
+                <span class="round-tag" id="roundTag">ROUND 1</span>
+                <span class="vote-progress" id="voteProgress">0 / 0 voted</span>
+              </div>
+            </div>
+
+            <div class="reveal-countdown" id="revealCountdown" hidden aria-live="assertive">
+              <span class="eyebrow">FINALISING VOTES</span>
+              <strong id="revealCountdownValue">5</strong>
+              <span>SECONDS UNTIL REVEAL</span>
+            </div>
+
+            <div class="participant-table" id="participantTable" aria-live="polite"></div>
+
+            <section class="results-panel" id="resultsPanel" hidden>
+              <div class="results-summary">
+                <span class="eyebrow">ROUND RESULT</span>
+                <strong id="averageValue">-</strong>
+                <span id="averageCaption">average estimate</span>
+              </div>
+              <div class="distribution" id="distribution" aria-label="Vote distribution"></div>
+            </section>
+
+            <div class="deck-heading">
+              <div class="deck-heading-copy">
+                <p class="eyebrow">YOUR CARD</p>
+                <span id="selectionCaption">Pick privately. The table sees your status.</span>
+              </div>
+              <div class="deck-heading-actions">
+                <div class="deck-size-control" role="group" aria-label="Card size">
+                  <span class="deck-size-label">SIZE</span>
+                  <button class="deck-size-option" type="button" data-card-size="small" title="Use small cards" aria-label="Use small cards" aria-pressed="false">S</button>
+                  <button class="deck-size-option" type="button" data-card-size="medium" title="Use medium cards" aria-label="Use medium cards" aria-pressed="true">M</button>
+                  <button class="deck-size-option" type="button" data-card-size="large" title="Use large cards" aria-label="Use large cards" aria-pressed="false">L</button>
+                </div>
+                <span class="selected-card" id="selectedCard" hidden></span>
+              </div>
+            </div>
+            <div class="deck" id="deck" role="group" aria-label="Story point cards"></div>
+          </section>
+
+          <aside class="room-sidebar">
+            <div class="sidebar-section sidebar-people">
+              <div class="sidebar-heading">
+                <span class="eyebrow">AT THE TABLE</span>
+                <span class="people-count" id="peopleCount">0</span>
+              </div>
+              <div class="people-list" id="peopleList"></div>
+            </div>
+
+            <div class="sidebar-section host-controls" id="hostControls" hidden>
+              <div class="sidebar-heading">
+                <span class="eyebrow">HOST DESK</span>
+                <span class="host-badge">HOST</span>
+              </div>
+              <div class="suggestion-setting">
+                <label class="toggle-row" for="suggestionsEnabledInput">
+                  <span class="toggle-copy">
+                    <strong>Guest suggestions</strong>
+                    <span id="suggestionsSettingCaption">Off</span>
+                  </span>
+                  <input class="toggle-input" id="suggestionsEnabledInput" type="checkbox">
+                </label>
+              </div>
+              <div class="deck-setting">
+                <label for="roomDeckInput">Voting cards</label>
+                <select class="text-input" id="roomDeckInput">
+                  <option value="fibonacci">Fibonacci</option>
+                  <option value="safe_fibonacci">SAFe modified Fibonacci</option>
+                  <option value="t_shirt">T-Shirt sizing</option>
+                </select>
+              </div>
+              <div class="reveal-settings">
+                <label for="revealCountdownInput">Reveal timer</label>
+                <div class="reveal-settings-input">
+                  <input class="timer-input" id="revealCountdownInput" type="number" min="1" max="60" step="1" value="5" inputmode="numeric">
+                  <span>seconds</span>
+                </div>
+              </div>
+              <button class="button button-dark button-wide" id="revealButton" type="button">
+                <i data-lucide="eye" aria-hidden="true"></i>
+                <span>Reveal cards</span>
+              </button>
+              <button class="button button-mint button-wide" id="startStoryButton" type="button">
+                <i data-lucide="file-plus-2" aria-hidden="true"></i>
+                <span>Start new story</span>
+              </button>
+              <button class="button button-quiet button-wide" id="resetButton" type="button">
+                <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+                <span>Start new round</span>
+              </button>
+              <button class="button button-danger button-wide" id="deleteSessionButton" type="button">
+                <i data-lucide="trash-2" aria-hidden="true"></i>
+                <span>Delete session</span>
+              </button>
+            </div>
+
+            <div class="sidebar-section story-queue-section" id="storyQueueSection">
+              <div class="sidebar-heading">
+                <span class="eyebrow">STORY QUEUE</span>
+                <span class="queue-count" id="storyQueueCount">0</span>
+              </div>
+              <button class="button button-outline button-wide" id="suggestStoryButton" type="button" hidden>
+                <i data-lucide="message-square-plus" aria-hidden="true"></i>
+                <span>Suggest a story</span>
+              </button>
+              <p class="story-queue-caption" id="storyQueueCaption">Guest suggestions are off.</p>
+              <div class="queue-group" id="suggestionGroup" hidden>
+                <div class="queue-group-heading">
+                  <span class="eyebrow">PENDING</span>
+                  <span id="suggestionCount">0</span>
+                </div>
+                <div class="queue-list" id="suggestionsList"></div>
+              </div>
+              <div class="queue-group" id="backlogGroup" hidden>
+                <div class="queue-group-heading">
+                  <span class="eyebrow">BACKLOG</span>
+                  <span id="backlogCount">0</span>
+                </div>
+                <div class="queue-list" id="backlogList"></div>
+              </div>
+            </div>
+
+            <div class="sidebar-section share-section">
+              <div class="sidebar-heading">
+                <span class="eyebrow">SHARE THIS ROOM</span>
+                <i data-lucide="link-2" aria-hidden="true"></i>
+              </div>
+              <div class="share-link-row">
+                <input class="share-input" id="shareLink" readonly aria-label="Share link">
+                <button class="icon-button icon-button-light" id="copyShareButton" type="button" title="Copy share link" aria-label="Copy share link">
+                  <i data-lucide="copy" aria-hidden="true"></i>
+                </button>
+              </div>
+              <p class="share-caption">Keep this link private; share the room code with your team.</p>
+            </div>
+
+            <a class="leave-link" href="/">Leave room <i data-lucide="arrow-left" aria-hidden="true"></i></a>
+          </aside>
+
+          <details class="history-section" id="historySection" hidden>
+            <summary class="history-heading">
+              <div>
+                <p class="eyebrow">SESSION HISTORY</p>
+                <h2>Past stories</h2>
+              </div>
+              <div class="history-heading-meta">
+                <span class="history-count" id="historyCount">0 rounds</span>
+                <i class="history-toggle-icon" data-lucide="chevron-down" aria-hidden="true"></i>
+              </div>
+            </summary>
+            <div class="history-list" id="historyList"></div>
+          </details>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="story-modal" id="storyModal" hidden>
+    <div class="story-modal-backdrop" data-close-story-modal></div>
+    <section class="story-modal-panel" role="dialog" aria-modal="true" aria-labelledby="storyModalTitle">
+      <div class="story-modal-heading">
+        <p class="eyebrow" id="storyModalEyebrow">NEXT ROUND</p>
+        <h2 id="storyModalTitle">What are we sizing next?</h2>
+      </div>
+      <form id="newStoryForm">
+        <label class="field-label" id="storyModalInputLabel" for="newStoryInput">New user story</label>
+        <textarea class="story-modal-input" id="newStoryInput" maxlength="500" rows="4" placeholder="Paste an ADO story or enter a short description" required></textarea>
+        <div class="story-modal-actions">
+          <button class="button button-quiet" id="cancelStoryButton" type="button">Cancel</button>
+          <button class="button button-accent" type="submit">
+            <i data-lucide="arrow-right" aria-hidden="true"></i>
+            <span id="storyModalSubmitLabel">Start story</span>
+          </button>
+        </div>
+        <p class="form-error" id="storyModalError" role="alert" hidden></p>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <noscript><div class="noscript-message">This room needs JavaScript enabled to stay in sync.</div></noscript>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@0.468.0" integrity="sha384-uTYyvsSSUZeaPhb5RbKlQa0zY/WpX/QHfvg2mczXyBQOpkWPEDy9lczyp+w7SKXu" crossorigin="anonymous"></script>
+  <script type="module" src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

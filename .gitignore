@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_cache/
+.venv/
+*.py[cod]
+.env
+data/
+*.sqlite3
+certs/
+*.pem
+*.key
+.vscode/*.log
+
+.vscode/
