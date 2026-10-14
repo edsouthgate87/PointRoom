@@ -8,7 +8,7 @@ together. No accounts, no sign-up.
 
 ![Revealed round showing each person's vote and the average estimate](docs/images/revealed.png)
 
-Current version: `26.10.5` (see [version.py](version.py)).
+Current version: `26.10.6` (see [version.py](version.py)).
 
 ## Features
 
@@ -135,3 +135,9 @@ python -m pytest -q
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the versioning rule enforced by CI
 and how to run the load test.
+
+## License
+
+Copyright 2026 edsouthgate87.
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
