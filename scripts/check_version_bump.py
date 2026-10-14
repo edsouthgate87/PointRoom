@@ -11,6 +11,7 @@ VERSION_PATTERN = re.compile(r'__version__\s*=\s*"(\d+)\.(\d+)\.(\d+)"')
 
 NON_CODE_PATH_PREFIXES = (
     ".github/",
+    "docs/",
 )
 NON_CODE_SUFFIXES = (
     ".md",
