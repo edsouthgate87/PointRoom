@@ -29,33 +29,47 @@ def _run_git(*args: str) -> str:
     return result.stdout.strip()
 
 
-def _base_ref() -> str:
-    for candidate in ("origin/main", "main"):
-        try:
-            _run_git("rev-parse", "--verify", f"{candidate}^{{commit}}")
+DEFAULT_BRANCH_CANDIDATES = (
+    "origin/HEAD",
+    "origin/master",
+    "origin/main",
+    "master",
+    "main",
+)
+
+
+def _commit_sha(ref: str) -> str | None:
+    try:
+        return _run_git("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
+    except subprocess.CalledProcessError:
+        return None
+
+
+def _commit_exists(ref: str) -> bool:
+    return _commit_sha(ref) is not None
+
+
+def _base_ref(head_ref: str = "HEAD") -> str | None:
+    head_sha = _commit_sha(head_ref)
+    for candidate in DEFAULT_BRANCH_CANDIDATES:
+        candidate_sha = _commit_sha(candidate)
+        if candidate_sha and candidate_sha != head_sha:
             return candidate
-        except subprocess.CalledProcessError:
-            continue
-    return "HEAD~1"
+    parent = f"{head_ref}~1"
+    if _commit_exists(parent):
+        return parent
+    return None
 
 
-def _resolved_base_ref(base_ref: str | None) -> str:
-    if base_ref:
-        try:
-            _run_git("rev-parse", "--verify", f"{base_ref}^{{commit}}")
-            return base_ref
-        except subprocess.CalledProcessError:
-            pass
-    return _base_ref()
+def _resolved_base_ref(base_ref: str | None, head_ref: str = "HEAD") -> str | None:
+    if base_ref and _commit_exists(base_ref):
+        return base_ref
+    return _base_ref(head_ref)
 
 
 def _resolved_head_ref(head_ref: str | None) -> str:
-    if head_ref:
-        try:
-            _run_git("rev-parse", "--verify", f"{head_ref}^{{commit}}")
-            return head_ref
-        except subprocess.CalledProcessError:
-            pass
+    if head_ref and _commit_exists(head_ref):
+        return head_ref
     return "HEAD"
 
 
@@ -94,8 +108,11 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    base_ref = _resolved_base_ref(args.base)
     head_ref = _resolved_head_ref(args.head)
+    base_ref = _resolved_base_ref(args.base, head_ref)
+    if base_ref is None:
+        print("No base commit to compare against; version bump check skipped.")
+        return 0
     changed_files = [
         line
         for line in _run_git("diff", "--name-only", f"{base_ref}..{head_ref}").splitlines()

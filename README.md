@@ -2,11 +2,14 @@
 
 Point Room is a small, real-time story point poker room for internal team estimation. A host creates a room, shares the six-character code or link, and everyone votes privately before the cards are revealed together.
 
-Current application version: `26.10.3`, defined in [version.py](version.py). Versions use the `YY.M.BUILD` format: the first two segments identify the year and month, and the final segment must be incremented for every build in that month. Reset the build segment to `1` when the month changes.
+Current application version: `26.10.4`, defined in [version.py](version.py). Versions use the `YY.M.BUILD` format: the first two segments identify the year and month, and the final segment must be incremented for every build in that month. Reset the build segment to `1` when the month changes.
 CI enforces this rule with [scripts/check_version_bump.py](scripts/check_version_bump.py) and fails when code changes do not include a higher version.
 The check compares the PR head against its base, or a pushed head against the
 previous branch tip. On a newly pushed branch, GitHub supplies an all-zero previous
-SHA; the check falls back to `origin/main`.
+SHA; the check falls back to the default branch (`origin/HEAD`, then `master` or
+`main`) unless it points at the commit being checked, then to the head commit's
+parent. The repository's first commit has nothing to compare against, so the check
+is skipped.
 
 For the company deployment, support procedures, backups, updates, rollback, and incident checks, see [OPERATIONS.md](OPERATIONS.md).
 
